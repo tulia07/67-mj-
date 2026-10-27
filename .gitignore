@@ -1,0 +1,23 @@
+# Git 忽略规则
+node_modules/
+.workbuddy/
+
+# 日志与临时文件
+*.log
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 截图脚本产出的原始 PNG（仓库内保存的是压缩后的 WebP）
+docs/shots/*.png
+docs/ad/
+docs/diag/
+docs/look/

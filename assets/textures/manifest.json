@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "format": "webp",
+  "generatedBy": "tools/gen_textures.py",
+  "seed": 20261027,
+  "items": [
+    {
+      "file": "poster_0.webp",
+      "role": "poster",
+      "brand": "NEUROSYNC",
+      "bytes": 37720
+    },
+    {
+      "file": "poster_1.webp",
+      "role": "poster",
+      "brand": "HYPERCOLA",
+      "bytes": 32918
+    },
+    {
+      "file": "poster_2.webp",
+      "role": "poster",
+      "brand": "ZENITH LABS",
+      "bytes": 33040
+    },
+    {
+      "file": "poster_3.webp",
+      "role": "poster",
+      "brand": "BLACK TIDE",
+      "bytes": 36318
+    },
+    {
+      "file": "poster_4.webp",
+      "role": "poster",
+      "brand": "OMNI-CREDIT",
+      "bytes": 36860
+    },
+    {
+      "file": "poster_5.webp",
+      "role": "poster",
+      "brand": "KITSUNE 9",
+      "bytes": 33332
+    },
+    {
+      "file": "neon_signs.webp",
+      "role": "neon_atlas",
+      "bytes": 133150
+    },
+    {
+      "file": "ticker.webp",
+      "role": "ticker",
+      "bytes": 12368
+    },
+    {
+      "file": "facade_detail.webp",
+      "role": "detail",
+      "bytes": 7748
+    },
+    {
+      "file": "asphalt.webp",
+      "role": "asphalt",
+      "bytes": 26964
+    },
+    {
+      "file": "blob.webp",
+      "role": "sprite",
+      "bytes": 2992
+    },
+    {
+      "file": "holo.webp",
+      "role": "holo",
+      "bytes": 37158
+    }
+  ]
+}

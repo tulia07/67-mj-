@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CYBERPUNK MEGAPOLIS — Web-Swing Edition</title>
+<meta name="description" content="纯前端 Three.js 第三人称赛博都市摆荡游戏：程序化城市、骨骼动画、蛛丝摆荡、电影相机。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2306080f'/%3E%3Cpath d='M6 24 L12 8 L18 24' stroke='%232ef2ff' stroke-width='2.5' fill='none'/%3E%3Cpath d='M18 8 H26 L20 24' stroke='%23ff2e8a' stroke-width='2.5' fill='none'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./styles/main.css" />
+</head>
+<body>
+<div id="app">
+  <canvas id="scene"></canvas>
+
+  <!-- 画面后处理感：暗角 / 扫描线 / 噪点 / 速度边框 -->
+  <div class="fx-layer" id="fxVignette"></div>
+  <div class="fx-layer" id="fxScan"></div>
+  <div class="fx-layer" id="fxNoise"></div>
+  <div class="fx-speed" id="fxSpeed"></div>
+  <div id="fade"></div>
+
+  <!-- ============================ 加载 ============================ -->
+  <section id="loading" class="screen loading">
+    <div class="load-grid"></div>
+    <div class="load-inner">
+      <div class="brand-small">NEO-KOWLOON // 2087</div>
+      <h1 class="load-title"><span>CYBERPUNK</span><b>MEGAPOLIS</b></h1>
+      <div class="load-sub">WEB-SWING EDITION · 构建中</div>
+
+      <div class="load-bar-wrap">
+        <div class="load-bar"><i id="loadBar"></i><em></em></div>
+        <div class="load-meta">
+          <span id="loadPhase">初始化引擎</span>
+          <span id="loadPct">0.0%</span>
+        </div>
+        <div class="load-detail" id="loadDetail">正在准备 WebP 贴图管线…</div>
+      </div>
+
+      <div class="load-log" id="loadLog"></div>
+      <div class="load-tip" id="loadTip">提示：按住鼠标左键发射蛛丝，松开获得额外推力。</div>
+      <div class="load-stats" id="loadStats"></div>
+    </div>
+  </section>
+
+  <!-- ============================ 主菜单 ============================ -->
+  <section id="menu" class="screen menu hidden">
+    <div class="menu-scrim"></div>
+    <header class="menu-head">
+      <div class="logo">
+        <div class="logo-top">CYBERPUNK</div>
+        <div class="logo-bottom">MEGAPOLIS</div>
+        <div class="logo-tag">WEB-SWING EDITION</div>
+      </div>
+      <div class="menu-meta">
+        <div><span>区域</span> NEO-KOWLOON / 07</div>
+        <div><span>时间</span> <i id="menuClock">19:42</i></div>
+        <div><span>构建</span> v1.0.0 / offline</div>
+      </div>
+    </header>
+
+    <div class="menu-body">
+      <div class="menu-left">
+        <div class="prompt">
+          <span class="prompt-line"></span>
+          <p>选择你的 <b>网跑者</b>，在 1.7 公里的垂直城市里穿行。</p>
+        </div>
+        <div class="char-row" id="charRow">
+          <button class="char-card selected" data-char="male">
+            <div class="cc-head">
+              <span class="cc-role">街头佣兵 / STREET MERC</span>
+              <span class="cc-pick">01</span>
+            </div>
+            <div class="cc-name">凯 · KAI</div>
+            <p class="cc-desc">重型外骨骼，摆荡惯性略大，落地更稳。</p>
+            <div class="cc-stats">
+              <div><label>速度</label><i style="--v:0.6"></i></div>
+              <div><label>力量</label><i style="--v:0.85"></i></div>
+              <div><label>敏捷</label><i style="--v:0.6"></i></div>
+            </div>
+          </button>
+          <button class="char-card" data-char="female">
+            <div class="cc-head">
+              <span class="cc-role">网跑者 / NETRUNNER</span>
+              <span class="cc-pick">02</span>
+            </div>
+            <div class="cc-name">诺娃 · NOVA</div>
+            <p class="cc-desc">轻量骨架，收绳更快，空中转向更灵敏。</p>
+            <div class="cc-stats">
+              <div><label>速度</label><i style="--v:0.85"></i></div>
+              <div><label>力量</label><i style="--v:0.6"></i></div>
+              <div><label>敏捷</label><i style="--v:0.9"></i></div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-right">
+        <div class="setup">
+          <div class="setup-group">
+            <div class="setup-label">画质档位 <span>QUALITY</span></div>
+            <div class="seg" id="qualityGroup">
+              <button data-q="high" class="active">高<em>HIGH</em></button>
+              <button data-q="medium">中<em>MED</em></button>
+              <button data-q="low">低<em>LOW</em></button>
+            </div>
+          </div>
+          <div class="setup-group">
+            <div class="setup-label">时间预设 <span>LIGHTING</span></div>
+            <div class="seg" id="presetGroup">
+              <button data-p="dusk" class="active">黄昏</button>
+              <button data-p="night">深夜</button>
+              <button data-p="dawn">黎明</button>
+              <button data-p="noon">正午</button>
+            </div>
+          </div>
+          <button id="startBtn" class="start-btn">
+            <span class="sb-main">进入城市</span>
+            <span class="sb-sub">ENTER MEGAPOLIS · 点击锁定鼠标</span>
+          </button>
+          <div class="key-hint">
+            <div><kbd>WASD</kbd> 移动</div>
+            <div><kbd>左键</kbd> 蛛丝摆荡</div>
+            <div><kbd>Shift</kbd> 收绳 / 冲刺 / 俯冲</div>
+            <div><kbd>空格</kbd> 跳跃 / 滑翔</div>
+            <div><kbd>右键</kbd> 牵引索</div>
+            <div><kbd>H</kbd> 帮助 · <kbd>Esc</kbd> 暂停</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="menu-foot">
+      <div>程序化城市 · 实例化 / 合批 / 分块 LOD · WebP 贴图管线</div>
+      <div>鼠标锁定后即可游玩 · 建议全屏</div>
+    </footer>
+  </section>
+
+  <!-- ============================ HUD ============================ -->
+  <section id="hud" class="hud hidden">
+    <div class="hud-top-left">
+      <div class="district">
+        <span class="d-tag">SECTOR</span>
+        <b id="districtName">中央商务区</b>
+        <em id="districtSub">CENTRAL BUSINESS / 01</em>
+      </div>
+      <div class="objective"><i></i><span id="objective">自由摆荡 · 穿越整座城市</span></div>
+      <div class="flow">
+        <label>FLOW</label>
+        <div class="pips" id="flowPips"></div>
+        <b id="flowValue">x0</b>
+      </div>
+    </div>
+
+    <div class="hud-top-right">
+      <div class="telem-line"><span id="qualityTag">HIGH</span><span id="presetTag">黄昏</span><span id="fpsValue">60</span> FPS</div>
+      <div class="telem-line dim"><span>锚点</span><b id="anchorState">扫描中</b></div>
+    </div>
+
+    <div class="hud-speed">
+      <svg viewBox="0 0 200 120" class="gauge">
+        <path class="gauge-track" d="M16 104 A 84 84 0 0 1 184 104" />
+        <path class="gauge-fill" id="speedArc" d="M16 104 A 84 84 0 0 1 184 104" pathLength="100" />
+        <path class="gauge-ticks" d="M24 96 A 76 76 0 0 1 176 96" />
+      </svg>
+      <div class="speed-read">
+        <b id="speedValue">0</b>
+        <span>KM/H</span>
+      </div>
+      <div class="speed-bar"><i id="speedBar"></i></div>
+    </div>
+
+    <div class="hud-telem">
+      <div class="t-row"><label>高度</label><b id="altValue">0</b><span>M</span></div>
+      <div class="t-row"><label>垂直</label><b id="vSpeedValue">0</b><span>M/S</span></div>
+      <div class="t-row"><label>缆绳</label><b id="ropeValue">--</b><span>M</span></div>
+      <div class="t-sep"></div>
+      <div class="t-row small"><label>里程</label><b id="distanceValue">0</b><span>M</span></div>
+      <div class="t-row small"><label>峰值</label><b id="maxSpeedValue">0</b><span>KM/H</span></div>
+    </div>
+
+    <div class="hud-state">
+      <div class="state-chip" id="stateLabel">待机</div>
+      <div class="hint-bar" id="hintBar">
+        <span><kbd>左键</kbd> 发射蛛丝</span>
+        <span><kbd>空格</kbd> 跳跃</span>
+        <span><kbd>Shift</kbd> 冲刺</span>
+        <span><kbd>H</kbd> 帮助</span>
+      </div>
+    </div>
+
+    <div id="reticle" class="reticle">
+      <div class="ret-ring"></div>
+      <div class="ret-dot"></div>
+      <div class="ret-label">挂点</div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+  </section>
+
+  <!-- ============================ 暂停 ============================ -->
+  <section id="pause" class="screen pause hidden">
+    <div class="pause-panel">
+      <div class="pause-head">
+        <div>
+          <div class="pause-kicker">SYSTEM PAUSED</div>
+          <h2>暂停</h2>
+        </div>
+        <div class="pause-stats" id="pauseStats"></div>
+      </div>
+
+      <div class="pause-grid">
+        <div class="pause-col">
+          <button id="resumeBtn" class="btn primary">继续游戏 <em>RESUME</em></button>
+          <button id="restartBtn" class="btn">重新出生 <em>RESPAWN</em></button>
+          <button id="menuBtn" class="btn ghost">返回主菜单 <em>MENU</em></button>
+          <div class="slider">
+            <label>鼠标灵敏度 <b id="sensVal">1.00</b></label>
+            <input id="sensRange" type="range" min="0.2" max="2.4" step="0.05" value="1" />
+          </div>
+          <div class="toggle-row">
+            <button id="audioBtn" class="toggle on">音效 开</button>
+            <button id="helpBtn" class="toggle">操作说明</button>
+          </div>
+        </div>
+        <div class="pause-col">
+          <div class="setup-label">画质档位</div>
+          <div class="seg" id="pauseQuality">
+            <button data-q="high" class="active">高</button>
+            <button data-q="medium">中</button>
+            <button data-q="low">低</button>
+          </div>
+          <div class="setup-label">时间预设</div>
+          <div class="seg" id="pausePreset">
+            <button data-p="dusk" class="active">黄昏</button>
+            <button data-p="night">深夜</button>
+            <button data-p="dawn">黎明</button>
+            <button data-p="noon">正午</button>
+          </div>
+          <div class="pause-note">
+            <b>移动技巧</b>
+            <p>摆荡中按 <kbd>Shift</kbd> 收绳加速；松开左键后按 <kbd>Shift</kbd> 俯冲；空中按 <kbd>空格</kbd> 展翼滑翔；贴近墙面高速移动会自动墙跑，再按 <kbd>空格</kbd> 蹬墙跳。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 帮助 ============================ -->
+  <section id="help" class="screen help hidden">
+    <div class="help-panel">
+      <div class="help-head">
+        <h2>操作说明 <em>CONTROLS</em></h2>
+        <button id="helpClose" class="btn small">关闭</button>
+      </div>
+      <div class="help-grid">
+        <div class="help-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><p>相对镜头方向移动；在地面按住 <kbd>Shift</kbd> 冲刺。</p></div>
+        <div class="help-item"><kbd>鼠标</kbd><p>自由观察。准星变亮 = 有可用挂点且视线通畅。</p></div>
+        <div class="help-item"><kbd>左键</kbd><p>按住发射蛛丝摆荡，松开保留动量并追加推力；按住不放会自动续接下一个挂点。</p></div>
+        <div class="help-item"><kbd>右键</kbd><p>牵引索：直接拉向目标挂点，适合快速登顶。</p></div>
+        <div class="help-item"><kbd>Shift</kbd><p>摆荡中收绳（半径变小、速度变快）；空中俯冲；地面冲刺。</p></div>
+        <div class="help-item"><kbd>空格</kbd><p>跳跃；摆荡中松开并获得向上推力；空中再按一次展开滑翔翼（可再按收起）。</p></div>
+        <div class="help-item"><kbd>H</kbd><p>打开/关闭本说明。</p></div>
+        <div class="help-item"><kbd>Esc</kbd><p>暂停：画质、昼夜、灵敏度、音效。</p></div>
+        <div class="help-item"><kbd>R</kbd><p>立即救援：回到最近的高处安全落点。</p></div>
+        <div class="help-item"><kbd>F3</kbd><p>调试面板：帧率、绘制调用、三角面、速度与状态。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="debugPanel" class="debug hidden"></div>
+  <div id="perfWarn" class="perf-warn hidden"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

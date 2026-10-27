@@ -1,0 +1,31 @@
+{
+  "name": "cyberpunk-megapolis",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CYBERPUNK MEGAPOLIS — Web-Swing Edition：纯前端 Three.js 第三人称赛博都市摆荡游戏",
+  "scripts": {
+    "start": "node server.js 5173",
+    "serve": "node server.js 5173",
+    "test": "node --test tests/unit.test.js",
+    "test:smoke": "node tests/smoke.mjs",
+    "shots": "node tests/shots.mjs",
+    "look": "node tests/look.mjs",
+    "assets": "python tools/gen_textures.py"
+  },
+  "keywords": [
+    "three.js",
+    "webgl",
+    "game",
+    "cyberpunk",
+    "procedural",
+    "swinging"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}
